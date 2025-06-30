@@ -32,6 +32,31 @@ print_error() {
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 INSTALL_DIR="$HOME/git-branch-pruner"
 
+# Check if we're running from the git-branch-pruner directory
+is_git_branch_pruner_dir() {
+    [[ -f "$SCRIPT_DIR/branch-pruner.sh" ]] && [[ -f "$SCRIPT_DIR/git-branch-pruner" ]]
+}
+
+# Clone repository if needed
+setup_source_files() {
+    if ! is_git_branch_pruner_dir; then
+        print_status "Not running from git-branch-pruner directory. Cloning repository..."
+        
+        # Create a temporary directory for cloning
+        TEMP_DIR=$(mktemp -d)
+        cd "$TEMP_DIR"
+        
+        # Clone the repository
+        git clone https://github.com/Nick-Forshee-Ascent/git-branch-pruner.git
+        cd git-branch-pruner
+        
+        # Update SCRIPT_DIR to point to the cloned directory
+        SCRIPT_DIR="$(pwd)"
+        
+        print_success "Repository cloned to temporary directory"
+    fi
+}
+
 # Detect shell profile
 detect_shell_profile() {
     if [[ "$SHELL" == *"zsh"* ]]; then
@@ -52,6 +77,9 @@ SHELL_PROFILE=$(detect_shell_profile)
 print_status "Git Branch Pruner Installer"
 echo "======================"
 echo
+
+# Setup source files first
+setup_source_files
 
 print_status "Script directory: $SCRIPT_DIR"
 print_status "Install directory: $INSTALL_DIR"
@@ -75,6 +103,12 @@ print_status "Making scripts executable..."
 chmod +x "$INSTALL_DIR"/*.sh "$INSTALL_DIR"/git-branch-pruner
 
 print_success "Scripts copied and made executable!"
+
+# Clean up temporary directory if it was created
+if [[ -n "$TEMP_DIR" ]] && [[ -d "$TEMP_DIR" ]]; then
+    print_status "Cleaning up temporary files..."
+    rm -rf "$TEMP_DIR"
+fi
 
 # Ask user for setup preference
 echo
