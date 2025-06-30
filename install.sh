@@ -29,7 +29,14 @@ print_error() {
 }
 
 # Get the directory where this script is located
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# When run via curl, BASH_SOURCE[0] might not work correctly, so we need to handle this case
+if [[ "${BASH_SOURCE[0]}" != "" ]] && [[ -f "${BASH_SOURCE[0]}" ]]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+else
+    # Fallback to current directory if BASH_SOURCE doesn't work (e.g., when piped through curl)
+    SCRIPT_DIR="$(pwd)"
+fi
+
 INSTALL_DIR="$HOME/git-branch-pruner"
 
 # Check if we're running from the git-branch-pruner directory
@@ -39,9 +46,16 @@ is_git_branch_pruner_dir() {
 
 # Clone repository if needed
 setup_source_files() {
-    if ! is_git_branch_pruner_dir; then
+    # Check if we're running via curl (BASH_SOURCE[0] is empty or doesn't exist)
+    if [[ "${BASH_SOURCE[0]}" == "" ]] || [[ ! -f "${BASH_SOURCE[0]}" ]]; then
+        print_status "Detected curl execution. Cloning repository..."
+        FORCE_CLONE=true
+    elif ! is_git_branch_pruner_dir; then
         print_status "Not running from git-branch-pruner directory. Cloning repository..."
-        
+        FORCE_CLONE=true
+    fi
+    
+    if [[ "$FORCE_CLONE" == "true" ]]; then
         # Create a temporary directory for cloning
         TEMP_DIR=$(mktemp -d)
         cd "$TEMP_DIR"
