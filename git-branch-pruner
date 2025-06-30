@@ -4,4 +4,4 @@
 # This can be added to your PATH or used as an alias
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-"$SCRIPT_DIR/cleanup-branches.sh" "$@" 
+"$SCRIPT_DIR/branch-pruner.sh" "$@" 
