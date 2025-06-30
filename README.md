@@ -6,12 +6,12 @@ A collection of useful git scripts and utilities for developers. Currently inclu
 
 ### Option 1: One-liner install (Recommended)
 ```bash
-curl -sSL https://raw.githubusercontent.com/<yourusername>/git-branch-pruner/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/Nick-Forshee-Ascent/git-branch-pruner/main/install.sh | bash
 ```
 
 ### Option 2: Manual install
 ```bash
-git clone https://github.com/<yourusername>/git-branch-pruner.git
+git clone https://github.com/Nick-Forshee-Ascent/git-branch-pruner.git
 cd git-branch-pruner
 chmod +x install.sh
 ./install.sh
@@ -134,7 +134,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 If you encounter any issues or have questions:
 
-1. Check the [Issues](https://github.com/<yourusername>/git-branch-pruner/issues) page
+1. Check the [Issues](https://github.com/Nick-Forshee-Ascent/git-branch-pruner/issues) page
 2. Create a new issue with details about your problem
 3. Include your operating system and shell information
 
@@ -156,7 +156,7 @@ git pull origin main
 Or re-run the installer:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/<yourusername>/git-branch-pruner/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/Nick-Forshee-Ascent/git-branch-pruner/main/install.sh | bash
 ```
 
 ---
