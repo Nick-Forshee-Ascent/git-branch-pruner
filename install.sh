@@ -46,9 +46,6 @@ is_git_branch_pruner_dir() {
 
 # Clone repository if needed
 setup_source_files() {
-    print_status "Debug: BASH_SOURCE[0] = '${BASH_SOURCE[0]}'"
-    print_status "Debug: Current SCRIPT_DIR = '$SCRIPT_DIR'"
-    
     # Check if we're running via curl (BASH_SOURCE[0] is empty or doesn't exist)
     if [[ "${BASH_SOURCE[0]}" == "" ]] || [[ ! -f "${BASH_SOURCE[0]}" ]]; then
         print_status "Detected curl execution. Cloning repository..."
@@ -71,9 +68,6 @@ setup_source_files() {
         SCRIPT_DIR="$(pwd)"
         
         print_success "Repository cloned to temporary directory"
-        print_status "Debug: Updated SCRIPT_DIR = '$SCRIPT_DIR'"
-    else
-        print_status "Debug: No cloning needed, using existing SCRIPT_DIR = '$SCRIPT_DIR'"
     fi
 }
 
@@ -123,12 +117,6 @@ print_status "Making scripts executable..."
 chmod +x "$INSTALL_DIR"/*.sh "$INSTALL_DIR"/git-branch-pruner
 
 print_success "Scripts copied and made executable!"
-
-# Clean up temporary directory if it was created
-if [[ -n "$TEMP_DIR" ]] && [[ -d "$TEMP_DIR" ]]; then
-    print_status "Cleaning up temporary files..."
-    rm -rf "$TEMP_DIR"
-fi
 
 # Ask user for setup preference
 echo
@@ -209,3 +197,9 @@ echo "  git-branch-pruner --force       # Force delete all stale branches"
 echo "  git-branch-pruner --help        # Show help"
 echo
 print_status "To uninstall, simply remove the lines from $SHELL_PROFILE and delete $INSTALL_DIR"
+
+# Clean up temporary directory if it was created
+if [[ -n "$TEMP_DIR" ]] && [[ -d "$TEMP_DIR" ]]; then
+    print_status "Cleaning up temporary files..."
+    rm -rf "$TEMP_DIR"
+fi
