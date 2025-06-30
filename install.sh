@@ -119,6 +119,9 @@ chmod +x "$INSTALL_DIR"/*.sh "$INSTALL_DIR"/git-branch-pruner
 print_success "Scripts copied and made executable!"
 
 # Check if we're running via curl (non-interactive)
+print_status "Debug: BASH_SOURCE[0] = '${BASH_SOURCE[0]}'"
+print_status "Debug: Testing if file exists: $([[ -f "${BASH_SOURCE[0]}" ]] && echo 'exists' || echo 'does not exist')"
+
 if [[ "${BASH_SOURCE[0]}" == "" ]] || [[ ! -f "${BASH_SOURCE[0]}" ]]; then
     # Running via curl - use default option (add to PATH)
     print_status "Running in non-interactive mode. Using default setup (add to PATH)."
@@ -135,6 +138,8 @@ else
 
     read -p "Enter your choice (1-4): " choice
 fi
+
+print_status "Debug: Final choice = '$choice'"
 
 case $choice in
     1)
