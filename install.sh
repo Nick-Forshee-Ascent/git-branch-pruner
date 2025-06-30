@@ -46,6 +46,9 @@ is_git_branch_pruner_dir() {
 
 # Clone repository if needed
 setup_source_files() {
+    print_status "Debug: BASH_SOURCE[0] = '${BASH_SOURCE[0]}'"
+    print_status "Debug: Current SCRIPT_DIR = '$SCRIPT_DIR'"
+    
     # Check if we're running via curl (BASH_SOURCE[0] is empty or doesn't exist)
     if [[ "${BASH_SOURCE[0]}" == "" ]] || [[ ! -f "${BASH_SOURCE[0]}" ]]; then
         print_status "Detected curl execution. Cloning repository..."
@@ -68,6 +71,9 @@ setup_source_files() {
         SCRIPT_DIR="$(pwd)"
         
         print_success "Repository cloned to temporary directory"
+        print_status "Debug: Updated SCRIPT_DIR = '$SCRIPT_DIR'"
+    else
+        print_status "Debug: No cloning needed, using existing SCRIPT_DIR = '$SCRIPT_DIR'"
     fi
 }
 
