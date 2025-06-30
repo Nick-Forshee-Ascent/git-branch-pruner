@@ -3,6 +3,7 @@
 # Git Branch Pruner Installer
 # This script installs git branch pruner utilities globally on your system
 
+echo "DEBUG: This is the LATEST VERSION of the install script - $(date)"
 set -e
 
 # Colors for output
