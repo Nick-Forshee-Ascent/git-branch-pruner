@@ -127,7 +127,21 @@ echo "3) Both (PATH + alias)"
 echo "4) Skip setup (use scripts directly from $INSTALL_DIR)"
 echo
 
-read -p "Enter your choice (1-4): " choice
+# Check if stdin is available for reading
+if [ -t 0 ]; then
+    # Interactive mode - stdin is available
+    read -p "Enter your choice (1-4): " choice
+else
+    # Non-interactive mode (e.g., piped through curl)
+    # Try to read from /dev/tty if available
+    if [ -e /dev/tty ]; then
+        read -p "Enter your choice (1-4): " choice < /dev/tty
+    else
+        # Fallback: use default option
+        print_warning "Cannot read user input. Using default option (add to PATH)."
+        choice=1
+    fi
+fi
 
 case $choice in
     1)
