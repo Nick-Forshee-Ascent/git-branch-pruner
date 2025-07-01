@@ -118,23 +118,16 @@ chmod +x "$INSTALL_DIR"/*.sh "$INSTALL_DIR"/git-branch-pruner
 
 print_success "Scripts copied and made executable!"
 
-# Check if we're running via curl (non-interactive)
-if [[ "${BASH_SOURCE[0]}" == "" ]] || [[ ! -f "${BASH_SOURCE[0]}" ]]; then
-    # Running via curl - use default option (add to PATH)
-    print_status "Running in non-interactive mode. Using default setup (add to PATH)."
-    choice=1
-else
-    # Interactive mode - ask user for preference
-    echo
-    echo "Choose setup option:"
-    echo "1) Add to PATH (recommended - allows running 'git-branch-pruner' from anywhere)"
-    echo "2) Create alias (alternative - allows running 'git-branch-pruner' from anywhere)"
-    echo "3) Both (PATH + alias)"
-    echo "4) Skip setup (use scripts directly from $INSTALL_DIR)"
-    echo
+# Ask user for setup preference
+echo
+echo "Choose setup option:"
+echo "1) Add to PATH (recommended - allows running 'git-branch-pruner' from anywhere)"
+echo "2) Create alias (alternative - allows running 'git-branch-pruner' from anywhere)"
+echo "3) Both (PATH + alias)"
+echo "4) Skip setup (use scripts directly from $INSTALL_DIR)"
+echo
 
-    read -p "Enter your choice (1-4): " choice
-fi
+read -p "Enter your choice (1-4): " choice
 
 case $choice in
     1)
