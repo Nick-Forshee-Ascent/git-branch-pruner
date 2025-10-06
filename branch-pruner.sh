@@ -64,13 +64,13 @@ branch_exists_on_remote() {
 # Function to get list of branches that don't exist on remote
 get_stale_branches() {
     local stale_branches=()
-    
+
     while IFS= read -r branch; do
         if [ -n "$branch" ] && ! branch_exists_on_remote "$branch"; then
             stale_branches+=("$branch")
         fi
     done < <(get_local_branches)
-    
+
     echo "${stale_branches[@]}"
 }
 
@@ -78,7 +78,7 @@ get_stale_branches() {
 delete_branch() {
     local branch_name="$1"
     local force_delete="$2"
-    
+
     if [ "$force_delete" = "true" ]; then
         git branch -D "$branch_name"
     else
@@ -86,12 +86,18 @@ delete_branch() {
     fi
 }
 
+# Function to check if a branch is merged
+is_branch_merged() {
+    local branch_name="$1"
+    git branch --merged | grep -q "^[[:space:]]*$branch_name$"
+}
+
 # Function to show branch information
 show_branch_info() {
     local branch_name="$1"
     local last_commit=$(git log --oneline -1 "$branch_name" --format="%h %s")
     local last_commit_date=$(git log --format="%cr" -1 "$branch_name")
-    
+
     echo "  - $branch_name"
     echo "    Last commit: $last_commit"
     echo "    Date: $last_commit_date"
@@ -103,13 +109,13 @@ show_summary() {
     local total_local_branches=$(get_local_branches | wc -l)
     local stale_branches=($(get_stale_branches))
     local stale_count=${#stale_branches[@]}
-    
+
     echo
     print_status "Branch Summary:"
     echo "  Current branch: $current_branch"
     echo "  Total local branches: $total_local_branches"
     echo "  Stale branches (not on remote): $stale_count"
-    
+
     if [ $stale_count -gt 0 ]; then
         echo
         print_warning "Stale branches found:"
@@ -126,10 +132,10 @@ show_summary() {
 dry_run() {
     print_status "Performing dry run..."
     show_summary
-    
+
     local stale_branches=($(get_stale_branches))
     local stale_count=${#stale_branches[@]}
-    
+
     if [ $stale_count -gt 0 ]; then
         echo
         print_warning "The following branches would be deleted:"
@@ -137,7 +143,16 @@ dry_run() {
             echo "  - $branch"
         done
         echo
-        print_status "Run with --delete flag to actually delete these branches"
+
+        # Check for unmerged branches
+        local unmerged_branches=()
+        for branch in "${stale_branches[@]}"; do
+            if ! is_branch_merged "$branch"; then
+                unmerged_branches+=("$branch")
+            fi
+        done
+
+        print_status "Run with --delete flag to actually delete these branches. Note: If branches are not merged, use --force flag to force delete unmerged branches"
     fi
 }
 
@@ -146,17 +161,12 @@ perform_cleanup() {
     local force_delete="$1"
     local stale_branches=($(get_stale_branches))
     local stale_count=${#stale_branches[@]}
-    
-    if [ $stale_count -eq 0 ]; then
-        print_success "No stale branches to delete!"
-        return
-    fi
-    
+
     print_status "Deleting $stale_count stale branch(es)..."
-    
+
     local deleted_count=0
     local failed_count=0
-    
+
     for branch in "${stale_branches[@]}"; do
         if delete_branch "$branch" "$force_delete"; then
             print_success "Deleted branch: $branch"
@@ -166,7 +176,7 @@ perform_cleanup() {
             ((failed_count++))
         fi
     done
-    
+
     echo
     print_success "Cleanup completed!"
     echo "  Branches deleted: $deleted_count"
@@ -209,7 +219,7 @@ main() {
     local dry_run_flag=false
     local delete_flag=false
     local force_flag=false
-    
+
     # Parse command line arguments
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -237,39 +247,53 @@ main() {
                 ;;
         esac
     done
-    
+
     # Check if we're in a git repository
     check_git_repo
-    
+
     # Fetch latest changes
     fetch_remote
-    
+
     # If no flags specified, default to dry run
     if [ "$dry_run_flag" = false ] && [ "$delete_flag" = false ]; then
         dry_run_flag=true
     fi
-    
+
     # Perform dry run if requested
     if [ "$dry_run_flag" = true ]; then
         dry_run
     fi
-    
+
     # Perform actual cleanup if requested
     if [ "$delete_flag" = true ]; then
-        echo
-        if [ "$force_flag" = true ]; then
-            print_warning "Force delete mode enabled - unmerged branches will be deleted!"
-        fi
-        
-        read -p "Are you sure you want to delete stale branches? (y/N): " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            perform_cleanup "$force_flag"
+        local stale_branches=($(get_stale_branches))
+        local stale_count=${#stale_branches[@]}
+
+        if [ $stale_count -eq 0 ]; then
+            print_success "No stale branches to delete!"
         else
-            print_status "Cleanup cancelled"
+            echo
+            if [ "$force_flag" = true ]; then
+                print_warning "Force delete mode enabled - unmerged branches will be deleted!"
+            fi
+
+            # Show the same summary as dry run before asking for confirmation
+            print_status "The following branches will be deleted:"
+            for branch in "${stale_branches[@]}"; do
+                show_branch_info "$branch"
+            done
+            echo
+
+            read -p "Are you sure you want to delete stale branches? (y/N): " -n 1 -r
+            echo
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                perform_cleanup "$force_flag"
+            else
+                print_status "Cleanup cancelled"
+            fi
         fi
     fi
 }
 
 # Run main function with all arguments
-main "$@" 
+main "$@"
